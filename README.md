@@ -1,5 +1,7 @@
 # Bio-Behavior Experiment Console (生物行为实验控制台)
 
+**中文** | **[English](README_en.md)**
+
 这是一个基于 Python 的图形化控制系统，专为生物行为学实验（如鱼类条件反射训练、行为轨迹监测）设计。该系统运行于嵌入式 Linux 平台（如 Orange Pi 5 Plus），集成了多路计算机视觉监控、实时运动检测、自动化硬件刺激反馈以及数据记录功能。
 
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
@@ -16,6 +18,43 @@
     * **👁️ 监测模式 (Monitoring)**: 纯观察模式，记录行为数据但不触发硬件刺激。
 * **数据记录**: 自动保存实验视频 (.mp4) 和 CSV 数据报表。
 * **远程通知**: 集成 Pushplus，实验状态变化时发送微信通知。
+
+## 🚀 快速开始 (二进制发行版)
+
+**推荐方式：无需安装 Python 或 OpenCV 环境，下载即可在 Orange Pi 上运行。**
+
+### 1. 准备工作
+确保你的开发板已安装 `wiringOP` 库（用于 GPIO 控制）：
+```bash
+# 检查 gpio 命令是否可用
+gpio -v
+
+
+# 如果报错 "command not found"，请参考 Orange Pi 官方文档安装 wiringOP
+# 对于 Orange Pi 5 Plus:
+git clone [https://github.com/orangepi-xunlong/wiringOP](https://github.com/orangepi-xunlong/wiringOP)
+cd wiringOP
+./build clean
+./build
+```
+
+### 2. 下载与运行
+### 2. 下载与运行
+
+访问项目 [Releases 页面](https://github.com/Zaoerdd/bio_behavior_console/releases) 下载最新版本 `bio_behavior_console`。
+
+在文件所在目录打开终端，赋予可执行权限并运行：
+
+```bash
+# 1. 赋予执行权限
+chmod +x bio_behavior_console
+
+# 2. 启动程序 (必须使用 sudo 以访问 GPIO 和 USB 摄像头)
+sudo ./bio_behavior_console
+```
+
+**提示:** 首次运行会自动在当前目录生成 config.json，您可以修改它来关闭测试模式或重新映射引脚。
+
 
 ## 🛠️ 硬件与环境要求
 
