@@ -583,14 +583,16 @@ class UnifiedGUI:
             timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"{prefix_name}_{timestamp}.mp4"
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            fps = 20.0
+            self.record_fps = 20.0  # [修改] 将 fps 存为实例变量，方便后续计算
             scale_factor = 0.5 
             self.record_w = int(self.display_w * scale_factor)
             self.record_h = int(self.display_h * scale_factor)
-            self.video_writer = cv2.VideoWriter(filename, fourcc, fps, (self.record_w, self.record_h))
+            self.video_writer = cv2.VideoWriter(filename, fourcc, self.record_fps, (self.record_w, self.record_h))
             
             if self.video_writer.isOpened():
                 self.recording_filename = filename
+                self.record_start_time = time.time()  # [新增] 记录录像的真实物理开始时间
+                self.recorded_frames = 0              # [新增] 记录已经写入的帧数计数器
                 self.log_system(f"🎥 录像开始 (Res: {self.record_w}x{self.record_h}): {filename}")
             else:
                 self.log_system("❌ 录像初始化失败！")
@@ -1270,11 +1272,23 @@ class UnifiedGUI:
             cv2.putText(frame_resized, timestamp_str, ts_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 4)
             cv2.putText(frame_resized, timestamp_str, ts_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
-            # 视频写入逻辑
+            # 视频写入逻辑 (时间同步对齐)
             if self.video_writer is not None:
                 try:
                     frame_to_save = cv2.resize(frame_resized, (self.record_w, self.record_h))
-                    self.video_writer.write(frame_to_save)
+                    
+                    # [新增计算逻辑] 计算从录像开始到现在，现实中过去了多少秒
+                    elapsed_time = time.time() - self.record_start_time
+                    
+                    # 根据现实时间和录像的固定FPS，计算到现在为止【应该】写入多少帧
+                    expected_frames = int(elapsed_time * self.record_fps)
+                    
+                    # 如果已写入的帧数落后于理论帧数，就不断补帧直到追上现实时间
+                    # (如果代码运行非常快，expected_frames 没变，这个循环就不会执行，从而实现丢帧防加速)
+                    while self.recorded_frames < expected_frames:
+                        self.video_writer.write(frame_to_save)
+                        self.recorded_frames += 1
+                        
                 except Exception as e:
                     print(f"写入帧错误: {e}")
 
